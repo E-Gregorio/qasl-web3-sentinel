@@ -1,0 +1,2224 @@
+{
+  "uid": "qasl-web3-live",
+  "title": "QASL WEB3 SENTINEL · Web3 Integration Observability",
+  "description": "Web3 integration observability from HAR evidence · Elyer Gregorio Maldonado",
+  "tags": [
+    "web3",
+    "json-rpc",
+    "qasl",
+    "sdet",
+    "blockchain"
+  ],
+  "timezone": "browser",
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "version": 2,
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "source",
+        "label": "Scan (vacío = último)",
+        "type": "textbox",
+        "query": "",
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "hide": 0
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 3
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;justify-content:space-between;align-items:center;padding:6px 10px;\">\n  <div>\n    <div style=\"font-size:26px;font-weight:800;letter-spacing:1px;\">QASL <span style=\"color:#4cc9f0;\">WEB3</span> SENTINEL</div>\n    <div style=\"color:#8b949e;font-size:13px;margin-top:2px;\">Web3 Integration Observability · Análisis de tráfico dApp / JSON-RPC desde evidencia HAR</div>\n  </div>\n  <div style=\"text-align:right;\">\n    <div style=\"font-size:14px;font-weight:600;\">Elyer Gregorio Maldonado</div>\n    <div style=\"color:#8b949e;font-size:12px;\">SDET · QA Automation Engineer</div>\n  </div>\n</div>"
+      },
+      "transparent": true
+    },
+    {
+      "id": 2,
+      "type": "gauge",
+      "title": "Health Score",
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#ff4d6d",
+                "value": null
+              },
+              {
+                "color": "#ffd166",
+                "value": 50
+              },
+              {
+                "color": "#2dd4a7",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^healthScore$/",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Llamadas JSON-RPC",
+      "gridPos": {
+        "x": 4,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#4cc9f0"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#4cc9f0",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^totalRpcCalls$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Errores fantasma",
+      "gridPos": {
+        "x": 8,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#ff4d6d"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#ff4d6d",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^ghostErrorCount$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Errores HTTP",
+      "gridPos": {
+        "x": 12,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#ff8c42"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#ff8c42",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^httpErrorCount$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Proveedores RPC",
+      "gridPos": {
+        "x": 16,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#b388ff"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#b388ff",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^providerCount$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Blockchain / Red",
+      "gridPos": {
+        "x": 20,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#ffd166"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#ffd166",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^chainsLabel$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "Requests HTTP totales",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#e8ecf1"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#e8ecf1",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^totalRequests$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "Métodos RPC distintos",
+      "gridPos": {
+        "x": 6,
+        "y": 8,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#79c0ff"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#79c0ff",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^rpcMethodCount$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Latencia promedio",
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#ffd166"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#ffd166",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^avgTiming$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Latencia p95",
+      "gridPos": {
+        "x": 18,
+        "y": 8,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#ff8c42"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#ff8c42",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^p95Timing$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 12,
+      "type": "table",
+      "title": "Alertas del análisis",
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/alerts?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "severidad",
+              "text": "Severidad",
+              "type": "string"
+            },
+            {
+              "selector": "alerta",
+              "text": "Alerta",
+              "type": "string"
+            },
+            {
+              "selector": "detalle",
+              "text": "Detalle",
+              "type": "string"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Severidad"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "CRITICAL": {
+                        "color": "#ff4d6d",
+                        "index": 0
+                      },
+                      "ERROR": {
+                        "color": "#ff8c42",
+                        "index": 1
+                      },
+                      "WARNING": {
+                        "color": "#b8860b",
+                        "index": 2
+                      },
+                      "INFO": {
+                        "color": "#1f6feb",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Severidad": 0,
+              "Alerta": 1,
+              "Detalle": 2
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "table",
+      "title": "Errores fantasma — HTTP 200 con error JSON-RPC (invisibles para Postman)",
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/ghost-errors?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "metodo",
+              "text": "Método RPC",
+              "type": "string"
+            },
+            {
+              "selector": "funcion",
+              "text": "Función",
+              "type": "string"
+            },
+            {
+              "selector": "proveedor",
+              "text": "Proveedor",
+              "type": "string"
+            },
+            {
+              "selector": "http_status",
+              "text": "HTTP",
+              "type": "number"
+            },
+            {
+              "selector": "error_jsonrpc",
+              "text": "Error JSON-RPC",
+              "type": "string"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "HTTP"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#2dd4a7"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Error JSON-RPC"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#ff4d6d"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Método RPC": 0,
+              "Función": 1,
+              "Proveedor": 2,
+              "HTTP": 3,
+              "Error JSON-RPC": 4
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "barchart",
+      "title": "Llamadas por método JSON-RPC",
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/methods?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "metodo",
+              "text": "Método",
+              "type": "string"
+            },
+            {
+              "selector": "llamadas",
+              "text": "Llamadas",
+              "type": "number"
+            },
+            {
+              "selector": "errores",
+              "text": "Errores",
+              "type": "number"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Llamadas"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#4cc9f0"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Errores"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#ff4d6d"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "stacking": "none",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Método": 0,
+              "Llamadas": 1,
+              "Errores": 2
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "type": "bargauge",
+      "title": "Latencia p95 por método JSON-RPC",
+      "gridPos": {
+        "x": 12,
+        "y": 21,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/methods?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "metodo",
+              "text": "Método",
+              "type": "string"
+            },
+            {
+              "selector": "p95_ms",
+              "text": "p95",
+              "type": "number"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#2dd4a7",
+                "value": null
+              },
+              {
+                "color": "#ffd166",
+                "value": 800
+              },
+              {
+                "color": "#ff4d6d",
+                "value": 1500
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "lcd",
+        "valueMode": "color",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": "/^p95$/"
+        },
+        "minVizHeight": 16,
+        "minVizWidth": 8
+      }
+    },
+    {
+      "id": 16,
+      "type": "table",
+      "title": "Detalle de métodos JSON-RPC",
+      "gridPos": {
+        "x": 0,
+        "y": 30,
+        "w": 14,
+        "h": 9
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/methods?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "metodo",
+              "text": "Método",
+              "type": "string"
+            },
+            {
+              "selector": "llamadas",
+              "text": "Llamadas",
+              "type": "number"
+            },
+            {
+              "selector": "errores",
+              "text": "Errores",
+              "type": "number"
+            },
+            {
+              "selector": "avg_ms",
+              "text": "Avg (ms)",
+              "type": "number"
+            },
+            {
+              "selector": "p50_ms",
+              "text": "p50 (ms)",
+              "type": "number"
+            },
+            {
+              "selector": "p95_ms",
+              "text": "p95 (ms)",
+              "type": "number"
+            },
+            {
+              "selector": "proveedores",
+              "text": "Proveedores",
+              "type": "string"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Errores"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#5b6472",
+                      "value": null
+                    },
+                    {
+                      "color": "#ff4d6d",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p95 (ms)"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#2dd4a7",
+                      "value": null
+                    },
+                    {
+                      "color": "#ffd166",
+                      "value": 800
+                    },
+                    {
+                      "color": "#ff4d6d",
+                      "value": 1500
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Llamadas",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Método": 0,
+              "Llamadas": 1,
+              "Errores": 2,
+              "Avg (ms)": 3,
+              "p50 (ms)": 4,
+              "p95 (ms)": 5,
+              "Proveedores": 6
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "type": "piechart",
+      "title": "Requests por categoría del ecosistema",
+      "gridPos": {
+        "x": 14,
+        "y": 30,
+        "w": 10,
+        "h": 9
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/categories?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "categoria",
+              "text": "Categoría",
+              "type": "string"
+            },
+            {
+              "selector": "requests",
+              "text": "Requests",
+              "type": "number"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "id": 18,
+      "type": "table",
+      "title": "Mapa de integraciones dApp — descubiertas desde el tráfico real",
+      "gridPos": {
+        "x": 0,
+        "y": 39,
+        "w": 24,
+        "h": 8
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/integrations?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "origen",
+              "text": "Origen (dApp)",
+              "type": "string"
+            },
+            {
+              "selector": "destino",
+              "text": "Integración",
+              "type": "string"
+            },
+            {
+              "selector": "hostname",
+              "text": "Hostname",
+              "type": "string"
+            },
+            {
+              "selector": "categoria",
+              "text": "Categoría",
+              "type": "string"
+            },
+            {
+              "selector": "requests",
+              "text": "Requests",
+              "type": "number"
+            },
+            {
+              "selector": "errores",
+              "text": "Errores",
+              "type": "number"
+            },
+            {
+              "selector": "avg_ms",
+              "text": "Avg (ms)",
+              "type": "number"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Categoría"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Proveedor RPC": {
+                        "color": "#1f6feb",
+                        "index": 0
+                      },
+                      "Indexer": {
+                        "color": "#8957e5",
+                        "index": 1
+                      },
+                      "Wallet Infra": {
+                        "color": "#9e6a03",
+                        "index": 2
+                      },
+                      "API de precios": {
+                        "color": "#1a7f37",
+                        "index": 3
+                      },
+                      "Block Explorer": {
+                        "color": "#bc4c00",
+                        "index": 4
+                      },
+                      "Seguridad Web3": {
+                        "color": "#cf222e",
+                        "index": 5
+                      },
+                      "Backend dApp": {
+                        "color": "#0d9488",
+                        "index": 6
+                      },
+                      "Analytics": {
+                        "color": "#6e7681",
+                        "index": 7
+                      },
+                      "CDN / Edge": {
+                        "color": "#57606a",
+                        "index": 8
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Errores"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#5b6472",
+                      "value": null
+                    },
+                    {
+                      "color": "#ff4d6d",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Requests",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Origen (dApp)": 0,
+              "Integración": 1,
+              "Hostname": 2,
+              "Categoría": 3,
+              "Requests": 4,
+              "Errores": 5,
+              "Avg (ms)": 6
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "type": "table",
+      "title": "Endpoints de las integraciones — qué se llamó y cómo respondió",
+      "gridPos": {
+        "x": 0,
+        "y": 47,
+        "w": 24,
+        "h": 10
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/endpoints?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "integracion",
+              "text": "Integración",
+              "type": "string"
+            },
+            {
+              "selector": "endpoint",
+              "text": "Endpoint",
+              "type": "string"
+            },
+            {
+              "selector": "metodo_http",
+              "text": "HTTP",
+              "type": "string"
+            },
+            {
+              "selector": "metodos_rpc",
+              "text": "Métodos JSON-RPC",
+              "type": "string"
+            },
+            {
+              "selector": "requests",
+              "text": "Requests",
+              "type": "number"
+            },
+            {
+              "selector": "status",
+              "text": "Status",
+              "type": "string"
+            },
+            {
+              "selector": "respuesta",
+              "text": "Respuesta",
+              "type": "string"
+            },
+            {
+              "selector": "detalle_error",
+              "text": "Detalle del error",
+              "type": "string"
+            },
+            {
+              "selector": "avg_ms",
+              "text": "Avg (ms)",
+              "type": "number"
+            },
+            {
+              "selector": "max_ms",
+              "text": "Máx (ms)",
+              "type": "number"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Respuesta"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "OK": {
+                        "color": "#1a7f37",
+                        "index": 0
+                      },
+                      "CON ERRORES": {
+                        "color": "#cf222e",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Detalle del error"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#ff8c42"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "HTTP"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Requests"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Integración": 0,
+              "Endpoint": 1,
+              "HTTP": 2,
+              "Métodos JSON-RPC": 3,
+              "Requests": 4,
+              "Status": 5,
+              "Respuesta": 6,
+              "Detalle del error": 7,
+              "Avg (ms)": 8,
+              "Máx (ms)": 9
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "type": "table",
+      "title": "Proveedores RPC — comportamiento de nodos",
+      "gridPos": {
+        "x": 0,
+        "y": 57,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/providers?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "proveedor",
+              "text": "Proveedor",
+              "type": "string"
+            },
+            {
+              "selector": "hostname",
+              "text": "Hostname",
+              "type": "string"
+            },
+            {
+              "selector": "llamadas_rpc",
+              "text": "Llamadas RPC",
+              "type": "number"
+            },
+            {
+              "selector": "errores",
+              "text": "Errores",
+              "type": "number"
+            },
+            {
+              "selector": "avg_ms",
+              "text": "Avg (ms)",
+              "type": "number"
+            },
+            {
+              "selector": "p95_ms",
+              "text": "p95 (ms)",
+              "type": "number"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Errores"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#5b6472",
+                      "value": null
+                    },
+                    {
+                      "color": "#ff4d6d",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Proveedor": 0,
+              "Hostname": 1,
+              "Llamadas RPC": 2,
+              "Errores": 3,
+              "Avg (ms)": 4,
+              "p95 (ms)": 5
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "type": "table",
+      "title": "Funciones de contrato decodificadas (eth_call)",
+      "gridPos": {
+        "x": 12,
+        "y": 57,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/selectors?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "funcion",
+              "text": "Función del contrato",
+              "type": "string"
+            },
+            {
+              "selector": "llamadas",
+              "text": "Llamadas",
+              "type": "number"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Llamadas",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Función del contrato": 0,
+              "Llamadas": 1
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "type": "table",
+      "title": "Evidencia — request a request",
+      "gridPos": {
+        "x": 0,
+        "y": 65,
+        "w": 24,
+        "h": 10
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/requests?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "categoria",
+              "text": "Categoría",
+              "type": "string"
+            },
+            {
+              "selector": "sistema",
+              "text": "Sistema",
+              "type": "string"
+            },
+            {
+              "selector": "url",
+              "text": "URL",
+              "type": "string"
+            },
+            {
+              "selector": "metodo_http",
+              "text": "HTTP",
+              "type": "string"
+            },
+            {
+              "selector": "status",
+              "text": "Status",
+              "type": "number"
+            },
+            {
+              "selector": "tiempo_ms",
+              "text": "Tiempo (ms)",
+              "type": "number"
+            },
+            {
+              "selector": "metodos_rpc",
+              "text": "Métodos JSON-RPC",
+              "type": "string"
+            },
+            {
+              "selector": "error_rpc",
+              "text": "Error RPC",
+              "type": "string"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#2dd4a7",
+                      "value": null
+                    },
+                    {
+                      "color": "#ff4d6d",
+                      "value": 400
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Categoría": 0,
+              "Sistema": 1,
+              "URL": 2,
+              "HTTP": 3,
+              "Status": 4,
+              "Tiempo (ms)": 5,
+              "Métodos JSON-RPC": 6,
+              "Error RPC": 7
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "x": 0,
+        "y": 75,
+        "w": 24,
+        "h": 2
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;justify-content:space-between;color:#5b6472;font-size:12px;padding:4px 10px;border-top:1px solid #21262d;\">\n      <span>QASL WEB3 SENTINEL · datos servidos en vivo por la API del proyecto (último scan de /reports)</span>\n      <span>Elyer Gregorio Maldonado · SDET / QA Automation · 2026</span>\n    </div>"
+      },
+      "transparent": true
+    }
+  ]
+}

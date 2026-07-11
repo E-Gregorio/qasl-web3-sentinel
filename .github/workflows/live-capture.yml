@@ -1,0 +1,51 @@
+name: Live dApp Capture (manual)
+
+# Captures real production traffic from a dApp with headless Playwright,
+# then runs the Sentinel analysis on it. Triggered manually because live
+# capture depends on external networks (Cloudflare, dApp availability) —
+# it must never gate the main CI.
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'dApp URL to capture'
+        default: 'https://app.uniswap.org/'
+        required: true
+      session_name:
+        description: 'Session name (output: input/<name>.har)'
+        default: 'ci-live-session'
+        required: true
+
+jobs:
+  capture-and-analyze:
+    name: Capture live traffic → analyze → publish evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Playwright (capture layer only — engine stays zero-dep)
+        run: |
+          npm i -D playwright
+          npx playwright install --with-deps chromium
+
+      - name: Capture live dApp traffic (headless)
+        run: node capture-dapp.js "${{ github.event.inputs.url }}" "${{ github.event.inputs.session_name }}" --headless
+
+      - name: Run Sentinel analysis
+        run: node run.js "${{ github.event.inputs.session_name }}.har"
+
+      - name: Upload analysis reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-capture-reports
+          path: reports/*${{ github.event.inputs.session_name }}*
+          retention-days: 14

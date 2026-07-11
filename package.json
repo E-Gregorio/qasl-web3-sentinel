@@ -1,0 +1,23 @@
+{
+  "name": "qasl-web3-sentinel",
+  "version": "1.0.0",
+  "description": "QASL Web3 Sentinel — Web3 integration observability from real traffic evidence (HAR → JSON-RPC analysis → Grafana)",
+  "author": "Elyer Gregorio Maldonado",
+  "main": "run.js",
+  "scripts": {
+    "start": "node run.js",
+    "scan": "node run.js",
+    "demo": "node run.js demo-dapp.har",
+    "grafana": "cd grafana && docker compose up -d --build",
+    "grafana:down": "cd grafana && docker compose down",
+    "grafana:api": "node src/grafana-api.js",
+    "capture": "node capture-dapp.js",
+    "capture:uniswap": "node capture-dapp.js https://app.uniswap.org/ uniswap-session"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

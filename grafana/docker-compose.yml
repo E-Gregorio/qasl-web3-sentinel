@@ -1,0 +1,38 @@
+name: qasl-web3-sentinel
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: grafana/Dockerfile.api
+    container_name: qasl-web3-api
+    restart: unless-stopped
+    environment:
+      - PORT=7392
+      - REPORTS_DIR=/app/reports
+    volumes:
+      - ../reports:/app/reports:ro
+    ports:
+      - "${API_PORT:-48291}:7392"
+
+  grafana:
+    image: grafana/grafana-oss:11.4.0
+    container_name: qasl-web3-grafana
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-qasl}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-qaslweb32026}
+      - GF_INSTALL_PLUGINS=yesoreyeram-infinity-datasource
+      - GF_USERS_DEFAULT_THEME=dark
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/qasl-web3-dashboard.json
+    volumes:
+      - ./provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "${GRAFANA_PORT:-48147}:3000"
+
+volumes:
+  grafana-data:

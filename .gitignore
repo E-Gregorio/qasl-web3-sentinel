@@ -1,0 +1,18 @@
+# Dependencias
+node_modules/
+
+# Salidas generadas
+reports/*
+!reports/.gitkeep
+
+# HAR reales (pueden contener claves de API en URLs, cookies, direcciones)
+input/*.har
+!input/demo-dapp.har
+
+# Entorno
+.env
+
+# Sistema
+*.stackdump
+.DS_Store
+Thumbs.db

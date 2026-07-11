@@ -1,0 +1,8 @@
+# QASL WEB3 LIVE SERVER — API de datos (cero dependencias)
+FROM node:20-alpine
+
+WORKDIR /app
+COPY src/grafana-api.js ./src/grafana-api.js
+
+EXPOSE 7392
+CMD ["node", "src/grafana-api.js"]
