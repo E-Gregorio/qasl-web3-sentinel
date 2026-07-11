@@ -11,6 +11,9 @@ QASL Web3 Sentinel captures a dApp session (Playwright or DevTools), opens the b
 
 Sister project of [QASL Backend Live Server](https://github.com/E-Gregorio/QASL-BACKEND-LIVE-SCANNER), specialized in the blockchain layer.
 
+![Grafana dashboard — live analysis of real Uniswap production traffic](docs/img/grafana1.png)
+*Live Grafana dashboard analyzing real Uniswap production traffic: health score, JSON-RPC KPIs, and severity-ranked alerts.*
+
 ---
 
 ## The problem it solves
@@ -18,6 +21,9 @@ Sister project of [QASL Backend Live Server](https://github.com/E-Gregorio/QASL-
 A dApp is a web application whose *backend* speaks JSON-RPC with blockchain nodes (Infura, Alchemy, QuickNode, or self-hosted gateways). Classic HTTP testing tools see that traffic as `POST 200 OK` — and stop there. But in JSON-RPC, **failures travel inside an HTTP 200**: an `execution reverted`, a `rate exceeded`, an `invalid params` all arrive with a green status code and an `error` field in the body.
 
 Sentinel calls these **ghost errors**: failures invisible to any validation based on HTTP status. It flags them as CRITICAL, with the exact method, decoded contract function, provider, and cause.
+
+![Ghost errors — HTTP 200 with JSON-RPC error, plus per-method stats and decoded contract functions](docs/img/reporte2.png)
+*Ghost errors surfaced with HTTP 200 status, per-method latency stats, and decoded ERC-20 contract functions.*
 
 | | HTTP-level tools (Postman, HAR viewers) | Node-level tools (Tenderly, Blocknative) | **QASL Web3 Sentinel** |
 |---|---|---|---|
@@ -59,6 +65,20 @@ Runs the engine against `input/demo-dapp.har` — a deterministic synthetic DeFi
 
 - `reports/web3-report-demo-dapp.html` — executive report (dark theme)
 - `reports/web3-data-demo-dapp.json` — full dataset for dashboards / CI
+
+![Executive HTML report — health score, KPIs and severity-ranked alerts](docs/img/reporte1.png)
+*The executive HTML report: health score, KPIs, and the alert stack — two CRITICAL ghost errors caught in the demo fixture.*
+
+<details>
+<summary><strong>More report screenshots</strong> — integration map & request-level evidence</summary>
+
+![Integration map — RPC providers, price APIs, indexers, wallet infra and Web3 security](docs/img/reporte3.png)
+*Integration map discovered from traffic: providers, price APIs, indexer, wallet infra, and Web3 security services.*
+
+![Request-by-request evidence with JSON-RPC methods and error detail](docs/img/reporte4.png)
+*Request-by-request evidence: every call with its JSON-RPC method, latency, and RPC-level error detail.*
+
+</details>
 
 The engine itself has **zero runtime dependencies**. `npm install` downloads nothing unless you want the capture layer.
 
@@ -112,6 +132,20 @@ npm run grafana        # Docker: Grafana OSS + the project's data API
 Open **http://localhost:48147** (default credentials `qasl` / `qaslweb32026` — change them in `grafana/.env`, see `.env.example`).
 
 The dashboard is provisioned automatically and is **fully dynamic**: the API (native Node HTTP, zero deps) always serves the latest scan from `reports/`, refreshed every 30s. Run a new scan and the dashboard re-renders itself — nothing hardcoded. Panels include Health Score, JSON-RPC KPIs, severity-colored alerts, **ghost errors**, per-method call volume and p95 latency, ecosystem category distribution, RPC node behavior, decoded contract functions, the **integration map**, per-endpoint response detail, and request-by-request evidence.
+
+![Grafana — integration map and per-endpoint response detail](docs/img/grafana3.png)
+*The integration map and per-endpoint detail: every discovered service, how each endpoint responded, and where the errors live.*
+
+![Grafana — JSON-RPC method volume, p95 latency and ecosystem distribution](docs/img/grafana2.png)
+*Per-method call volume, threshold-colored p95 latency, and request distribution across the dApp ecosystem.*
+
+<details>
+<summary><strong>More dashboard screenshots</strong> — node behavior & evidence table</summary>
+
+![Grafana — RPC node behavior, decoded contract functions and evidence](docs/img/grafana4.png)
+*RPC node behavior, decoded Multicall3 contract calls, and the filterable request-level evidence table.*
+
+</details>
 
 The API also runs without Docker (`npm run grafana:api`, port 7392) and exposes: `/api/meta`, `/api/methods`, `/api/providers`, `/api/integrations`, `/api/endpoints`, `/api/alerts`, `/api/ghost-errors`, `/api/selectors`, `/api/categories`, `/api/requests`, `/api/sources` — all accept `?source=<file>` to query a specific scan.
 
