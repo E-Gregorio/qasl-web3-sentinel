@@ -11,8 +11,8 @@ QASL Web3 Sentinel captures a dApp session (Playwright or DevTools), opens the b
 
 Sister project of [QASL Backend Live Server](https://github.com/E-Gregorio/QASL-BACKEND-LIVE-SCANNER), specialized in the blockchain layer.
 
-![Grafana dashboard — live analysis of real Uniswap production traffic](docs/img/grafana1.png)
-*Live Grafana dashboard analyzing real Uniswap production traffic: health score, JSON-RPC KPIs, and severity-ranked alerts.*
+![Grafana dashboard — Web3-native KPIs, multi-chain activity and on-chain transaction lifecycle](docs/img/metamax1.png)
+*The live Grafana dashboard: health score, on-chain read/write split, gas price, multi-chain RPC activity, and a real transaction lifecycle — CONFIRMED after 3 receipt polls in 733 ms.*
 
 ---
 
@@ -108,7 +108,14 @@ npm run capture:uniswap                                    # or: node capture-da
 
 The script navigates to the dApp, runs a read-only flow (initialization, scroll, a 20s manual-interaction window), streams every JSON-RPC call to the console live, and records the HAR with embedded bodies (`recordHar` + `content: 'embed'`).
 
-> For wallet-signing flows (approve/swap), plug **Synpress** or **dappwright** on top of this same script — or inject a test provider into `window.ethereum` for CI. The engine doesn't change: it consumes the HAR either way.
+### 1b. Wallet flows — real MetaMask automation (Dappwright)
+
+```bash
+npm i -D @tenkeylabs/dappwright     # once — downloads the real MetaMask extension
+npm run capture:wallet              # or: node capture-wallet-dapp.js <url> <name>
+```
+
+Launches Chromium with the **real MetaMask extension**, imports a disposable test wallet (the public Hardhat seed — no funds, never use a personal seed), navigates to the dApp, auto-connects the wallet (`Connect → MetaMask → Approve`, with a manual fallback window), and records the whole session through the project's own **HAR recorder** (`src/har-recorder.js`) — built because extension-based contexts don't expose Playwright's native `recordHar`. The engine then analyzes the wallet-connected session like any other: address-bound balance queries, connection side effects, and every JSON-RPC call the dApp fires once a wallet is present.
 
 Manual alternative: Chrome DevTools → Network → *Preserve log* → run the flow → *Save all as HAR with content* → drop it in `input/`.
 
@@ -133,17 +140,17 @@ Open **http://localhost:48147** (default credentials `qasl` / `qaslweb32026` —
 
 The dashboard is provisioned automatically and is **fully dynamic**: the API (native Node HTTP, zero deps) always serves the latest scan from `reports/`, refreshed every 30s. Run a new scan and the dashboard re-renders itself — nothing hardcoded. Panels include Health Score, JSON-RPC KPIs, severity-colored alerts, **ghost errors**, per-method call volume and p95 latency, ecosystem category distribution, RPC node behavior, decoded contract functions, the **integration map**, per-endpoint response detail, and request-by-request evidence.
 
-![Grafana — integration map and per-endpoint response detail](docs/img/grafana3.png)
-*The integration map and per-endpoint detail: every discovered service, how each endpoint responded, and where the errors live.*
+![Grafana — severity-ranked alerts, ghost errors and per-method JSON-RPC latency](docs/img/metamax2.png)
+*Severity-ranked alerts and the ghost-error panel: two failures with HTTP 200 that any status-based check would mark green — flagged CRITICAL with method, decoded function, provider and cause.*
 
-![Grafana — JSON-RPC method volume, p95 latency and ecosystem distribution](docs/img/grafana2.png)
-*Per-method call volume, threshold-colored p95 latency, and request distribution across the dApp ecosystem.*
+![Grafana — JSON-RPC method detail, ecosystem distribution and integration map](docs/img/metamax3.png)
+*Per-method stats with threshold-colored p95, request distribution across the ecosystem, and the integration map discovered from real traffic.*
 
 <details>
-<summary><strong>More dashboard screenshots</strong> — node behavior & evidence table</summary>
+<summary><strong>More dashboard screenshots</strong> — endpoint responses, node behavior & wallet infrastructure</summary>
 
-![Grafana — RPC node behavior, decoded contract functions and evidence](docs/img/grafana4.png)
-*RPC node behavior, decoded Multicall3 contract calls, and the filterable request-level evidence table.*
+![Grafana — endpoint responses, RPC node behavior, wallet infrastructure and decoded contract functions](docs/img/metamax4.png)
+*Per-endpoint response detail (including a JSON-RPC failure hiding behind HTTP 200), RPC node behavior, detected wallet-infrastructure services, and decoded ERC-20 contract functions.*
 
 </details>
 
@@ -151,61 +158,55 @@ The API also runs without Docker (`npm run grafana:api`, port 7392) and exposes:
 
 ---
 
+## Live demo runbook (from zero)
+
+Everything needed to run the full end-to-end demo on a clean machine, in order.
+
+**One-time setup:**
+
+```powershell
+git clone https://github.com/E-Gregorio/qasl-web3-sentinel.git
+cd qasl-web3-sentinel
+npm i -D playwright @tenkeylabs/dappwright
+npx playwright install chromium
+```
+
+**The demo, step by step:**
+
+```powershell
+# 1. Open Docker Desktop and wait until it says "running"
+
+# 2. Baseline analysis — deterministic fixture with ghost errors and a confirmed transaction
+npm run demo
+
+# 3. Start the observability stack (Grafana + data API)
+npm run grafana
+#    → open http://localhost:48147  (user: qasl / password: qaslweb32026)
+#    The dashboard loads as home, fed by the scan from step 2:
+#    2 CRITICAL ghost errors, on-chain write, tx CONFIRMED in 733 ms.
+
+# 4. LIVE: automated wallet flow — Chromium opens with the real MetaMask extension,
+#    imports a disposable test wallet and auto-connects to Uniswap
+npm run capture:wallet
+
+# 5. Analyze the session you just captured
+node run.js wallet-session.har
+
+# 6. Back to Grafana → F5. The whole dashboard re-renders with the live session:
+#    ~600 requests, multi-chain activity (Ethereum, Linea, Base, Arbitrum, BSC,
+#    Optimism, Polygon, Sepolia...), MetaMask's own microservices, zero config.
+
+# 7. Flip between scans with the "Scan" variable at the top:
+#    web3-data-demo-dapp.json   → fixture with ghost errors + tx lifecycle
+#    (empty)                    → latest scan
+```
+
+**Pre-demo checklist:** Docker Desktop already running · stack already up (`npm run grafana`) · `npm run demo` already executed · MetaMask already downloaded by a previous `capture:wallet` run · stable internet · browser tabs ready: Grafana (48147), the GitHub repo, and the Actions tab with the green pipeline.
+
+---
+
 ## CI/CD
 
 Two GitHub Actions workflows ship with the repo:
 
-**`ci.yml` — engine self-test (every push).** Runs the engine against the deterministic demo fixture and then executes `scripts/verify-engine.js`: a regression gate with 14 assertions (ghost errors found and decoded, batch extraction, chain detection, alert generation, health score…). If the engine's behavior drifts, the build goes red. The HTML report and JSON dataset are uploaded as build artifacts on every run.
-
-**`live-capture.yml` — live production capture (manual).** On demand, spins up headless Playwright inside the runner, captures real traffic from any dApp URL you pass as input, analyzes it, and publishes the reports as artifacts. Deliberately manual: live capture depends on external networks and must never gate the main CI.
-
----
-
-## Case study: Uniswap (production traffic)
-
-First run against `app.uniswap.org` — no configuration, findings straight from the evidence:
-
-- **Uniswap does not expose Infura/Alchemy**: it proxies all RPC through its own gateway (`entry-gateway.backend-prod.api.uniswap.org`). Sentinel classified it as a self-hosted RPC node **by the shape of the JSON-RPC bodies**, not by any domain list.
-- That gateway returned **7 × HTTP 401** on `/rpc/1` during the session — undocumented behavior surfaced on the first scan.
-- **Multicall3 in action**: the session's `eth_call`s decoded to `aggregate3(...)` — Uniswap batches dozens of on-chain reads into single calls.
-- The integration map exposed 5 internal backends (including `privy.app.uniswap.org`, its embedded-wallet auth), CoinGecko across 3 subdomains grouped as one integration, WalletConnect, and its real-time price WebSocket stream.
-- Polling profile: 11 × `eth_blockNumber` / 9 × `eth_chainId` with p95 865ms — the heartbeat behind live price updates.
-
----
-
-## Sensitive data
-
-A Web3 session HAR may contain provider API keys in URLs (`/v3/<key>`), wallet addresses, and transaction payloads. Treat HARs as secrets: `.gitignore` already excludes `input/*.har` (except the synthetic demo). Reports contain aggregated evidence only.
-
----
-
-## npm scripts
-
-| Script | Description |
-|--------|-------------|
-| `npm run demo` | Analyze the bundled demo fixture |
-| `npm run scan` / `npm start` | `node run.js` (first `.har` in `input/` if no file given) |
-| `npm run capture` | Capture a dApp session with Playwright (Uniswap by default) |
-| `npm run capture:uniswap` | Capture Uniswap → `input/uniswap-session.har` |
-| `npm run grafana` / `grafana:down` | Start / stop the Grafana + API Docker stack |
-| `npm run grafana:api` | Data API only, no Docker (port 7392) |
-
----
-
-## Roadmap
-
-- [ ] Quality gates: `--fail-on-ghost` / latency thresholds as exit codes for CI
-- [ ] Playwright Test fixture + reporter: attach Sentinel analysis to the native Playwright HTML report
-- [ ] Scan diff: detect new integrations / regressions between sessions
-- [ ] Same-session comparison across two RPC providers (response & latency diff)
-- [ ] Full calldata decoding with ABIs (beyond 4-byte selectors)
-- [ ] Wallet-signing flows via Synpress integration
-- [ ] WebSocket RPC support (`eth_subscribe`)
-
----
-
-## Author
-
-**Elyer Gregorio Maldonado** — SDET · QA Automation Engineer · 2026
-
-*QASL Web3 Sentinel is part of the QASL tooling suite.*
+**`ci.yml` — engine self-test (every push).** Runs the engine against the deterministic demo fixture and then executes `scripts/verify-engine.js`: a regression gate with 14 assertions (ghost errors found and decoded, batch extraction, chain detection, alert generation, health score…). If the engine's behavior drifts, the build goes red. The HTML report and JSON dataset are uploaded as build artifacts on 

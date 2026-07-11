@@ -1,5 +1,5 @@
 /**
- * QASL WEB3 LIVE SERVER
+ * QASL WEB3 SENTINEL
  * report-generator.js — Informe HTML ejecutivo del análisis Web3
  *
  * Elyer Gregorio Maldonado
@@ -44,6 +44,8 @@ function healthColor(score) {
 
 function generateReport(parsed, harFilename, reportsDir) {
   const { meta, methods, providers, systems, integrations, selectors, ghostErrors, alerts, requests } = parsed;
+  const chainActivity = parsed.chainActivity || [];
+  const transactions = parsed.transactions || [];
 
   const kpi = (value, label, color = '#e8ecf1') => `
     <div class="kpi">
@@ -125,7 +127,7 @@ function generateReport(parsed, harFilename, reportsDir) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QASL WEB3 · ${esc(harFilename)}</title>
+<title>QASL WEB3 SENTINEL · ${esc(harFilename)}</title>
 <style>
   :root { color-scheme: dark; }
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -198,7 +200,9 @@ function generateReport(parsed, harFilename, reportsDir) {
   <section class="kpis">
     ${kpi(meta.totalRequests, 'Requests HTTP')}
     ${kpi(meta.totalRpcCalls, 'Llamadas JSON-RPC', '#4cc9f0')}
-    ${kpi(meta.rpcMethodCount, 'Métodos RPC distintos', '#79c0ff')}
+    ${kpi(meta.readCalls ?? '—', 'Lecturas on-chain', '#2dd4a7')}
+    ${kpi(meta.writeCalls ?? '—', 'Escrituras on-chain', '#ff8c42')}
+    ${kpi(meta.gasPriceGwei != null ? meta.gasPriceGwei + ' gwei' : '—', 'Gas Price', '#ffd166')}
     ${kpi(meta.providerCount, 'Proveedores RPC', '#b388ff')}
     ${kpi(meta.ghostErrorCount, 'Errores fantasma', meta.ghostErrorCount > 0 ? '#ff4d6d' : '#2dd4a7')}
     ${kpi(meta.httpErrorCount, 'Errores HTTP', meta.httpErrorCount > 0 ? '#ff8c42' : '#2dd4a7')}
@@ -215,6 +219,27 @@ function generateReport(parsed, harFilename, reportsDir) {
   <table>
     <thead><tr><th>Método / función</th><th>Proveedor</th><th>Status HTTP</th><th>Error JSON-RPC</th></tr></thead>
     <tbody>${ghostRows}</tbody>
+  </table>` : ''}
+
+  ${chainActivity.length ? `
+  <h2>Actividad por blockchain</h2>
+  <table>
+    <thead><tr><th>Blockchain</th><th>Llamadas RPC</th><th>Hosts</th></tr></thead>
+    <tbody>${chainActivity.map(c => `
+    <tr><td><strong>${esc(c.chain)}</strong></td><td class="num">${c.rpcCalls}</td><td class="dim">${esc(c.hosts.join(', '))}</td></tr>`).join('')}</tbody>
+  </table>` : ''}
+
+  ${transactions.length ? `
+  <h2>Ciclo de vida de transacciones on-chain</h2>
+  <table>
+    <thead><tr><th>Tx Hash</th><th>Estado</th><th>Polls de receipt</th><th>Confirmación</th></tr></thead>
+    <tbody>${transactions.map(t => `
+    <tr>
+      <td><code>${esc(t.hash.slice(0, 14))}…</code></td>
+      <td style="color:${t.status === 'success' ? '#2dd4a7' : t.status === 'reverted' ? '#ff4d6d' : '#ffd166'}">${esc(t.status.toUpperCase())}</td>
+      <td class="num">${t.polls}</td>
+      <td class="num">${t.timeToReceiptMs != null ? t.timeToReceiptMs + ' ms' : '—'}</td>
+    </tr>`).join('')}</tbody>
   </table>` : ''}
 
   <h2>Métodos JSON-RPC</h2>

@@ -1,17 +1,17 @@
 /**
- * QASL WEB3 LIVE SERVER
+ * QASL WEB3 SENTINEL
  * web3-parser.js — Motor de análisis de tráfico dApp desde archivos HAR
  *
  * Qué hace distinto a un parser HTTP clásico:
  *   - Abre el body de cada request/response y extrae llamadas JSON-RPC
  *     (simples y batch), método por método.
- *   - Detecta "errores fantasma": HTTP 200 con error JSON-RPC en el body
- *     (la trampa clásica que Postman marca verde).
- *   - Decodifica selectores de función en eth_call / eth_sendRawTransaction
- *     (balanceOf, approve, swap...).
+ *   - Detecta "errores fantasma": HTTP 200 con error JSON-RPC en el body.
+ *   - Decodifica selectores de función en eth_call (balanceOf, approve...).
  *   - Calcula latencia avg / p50 / p95 por método RPC y por proveedor.
- *   - Arma el mapa de integraciones típico de una dApp:
- *     frontend → RPC providers → indexers → APIs de precios → wallet infra.
+ *   - Separa lecturas de escrituras on-chain y rastrea el ciclo de vida
+ *     de transacciones (send → polls de receipt → confirmación).
+ *   - Atribuye actividad por blockchain (eth_chainId + hostname del proveedor).
+ *   - Extrae gas price y estimaciones de gas de las respuestas.
  *
  * Elyer Gregorio Maldonado
  */
@@ -22,9 +22,19 @@ const {
   classifyHost,
   looksLikeJsonRpc,
   chainLabel,
+  inferChainFromHost,
   decodeSelector,
   describeRpcError
 } = require('./rpc-detector');
+
+// Métodos que ESCRIBEN en la blockchain (cuestan gas, requieren firma)
+const WRITE_METHODS = new Set(['eth_sendRawTransaction', 'eth_sendTransaction']);
+
+// Métodos cuyo result crudo nos interesa conservar (gas, tx lifecycle, chain)
+const RESULT_WHITELIST = new Set([
+  'eth_chainId', 'eth_gasPrice', 'eth_estimateGas',
+  'eth_sendRawTransaction', 'eth_getTransactionReceipt'
+]);
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -42,11 +52,6 @@ function round(n) { return Math.round(n * 10) / 10; }
 
 // ─── EXTRACCIÓN JSON-RPC ─────────────────────────────────────────────────────
 
-/**
- * Extrae las llamadas JSON-RPC de una entrada HAR.
- * Devuelve [] si la entrada no es JSON-RPC.
- * Cada llamada: { method, id, params, selector, chainHint, error, resultSize }
- */
 function extractRpcCalls(entry) {
   const postText = entry.request?.postData?.text;
   if (!looksLikeJsonRpc(postText)) return [];
@@ -74,19 +79,16 @@ function extractRpcCalls(entry) {
     const resp = respById.get(String(c.id)) ||
                  (reqCalls.length === 1 && respBody && !Array.isArray(respBody) ? respBody : null);
 
-    // Selector de función (eth_call → params[0].data)
     let selector = null;
     if (c.method === 'eth_call' && Array.isArray(c.params) && c.params[0]?.data) {
       selector = decodeSelector(c.params[0].data);
     }
 
-    // Pista de chain (respuesta de eth_chainId)
     let chainHint = null;
     if (c.method === 'eth_chainId' && resp?.result) {
       chainHint = chainLabel(resp.result);
     }
 
-    // Error JSON-RPC (puede venir con HTTP 200 → "error fantasma")
     let error = null;
     if (resp?.error) {
       error = {
@@ -103,7 +105,9 @@ function extractRpcCalls(entry) {
       chainHint,
       error,
       isBatch: reqCalls.length > 1,
-      resultSize: resp?.result !== undefined ? JSON.stringify(resp.result).length : 0
+      resultSize: resp?.result !== undefined ? JSON.stringify(resp.result).length : 0,
+      resultValue: RESULT_WHITELIST.has(c.method) && resp?.result !== undefined ? resp.result : undefined,
+      txParam: c.method === 'eth_getTransactionReceipt' && Array.isArray(c.params) ? c.params[0] : undefined
     });
   }
   return calls;
@@ -117,12 +121,12 @@ function parseHAR(harContent) {
 
   const entries = har.log.entries;
 
-  const requests   = [];   // evidencia por request
-  const systems    = new Map();   // hostname → info agregada
-  const methods    = new Map();   // método RPC → stats
-  const providers  = new Map();   // proveedor RPC → stats
+  const requests   = [];
+  const systems    = new Map();
+  const methods    = new Map();
+  const providers  = new Map();
   const chains     = new Set();
-  const selectors  = new Map();   // función decodificada → count
+  const selectors  = new Map();
   const alerts     = [];
   const ghostErrors = [];
 
@@ -130,7 +134,15 @@ function parseHAR(harContent) {
   let batchRequests = 0;
   let pageHost = null;
 
-  // Host de la página (primera entrada de documento, si existe)
+  // Web3-nativo: lecturas vs escrituras, gas, multi-chain, ciclo de vida de tx
+  let readCalls = 0;
+  let writeCalls = 0;
+  let gasPriceGwei = null;
+  const gasEstimates = [];
+  const chainByHost = new Map();
+  const chainActivity = new Map();
+  const txs = new Map();
+
   const firstDoc = entries.find(e => e.request?.url && (e._resourceType === 'document' || e.response?.content?.mimeType?.includes('html')));
   if (firstDoc) {
     try { pageHost = new URL(firstDoc.request.url).hostname; } catch { /* noop */ }
@@ -149,16 +161,10 @@ function parseHAR(harContent) {
 
     const cls = classifyHost(hostname, { isJsonRpc, pageHost });
 
-    // ── Sistema (por hostname) ──
     if (!systems.has(hostname)) {
       systems.set(hostname, {
-        hostname,
-        label: cls.label,
-        category: cls.category,
-        requestCount: 0,
-        errorCount: 0,
-        rpcCallCount: 0,
-        timings: []
+        hostname, label: cls.label, category: cls.category,
+        requestCount: 0, errorCount: 0, rpcCallCount: 0, timings: []
       });
     }
     const sys = systems.get(hostname);
@@ -166,7 +172,6 @@ function parseHAR(harContent) {
     sys.timings.push(timing);
     if (status >= 400) sys.errorCount++;
 
-    // ── Llamadas JSON-RPC dentro de la entrada ──
     const rpcCalls = extractRpcCalls(entry);
     const entryRpcErrors = [];
 
@@ -175,7 +180,6 @@ function parseHAR(harContent) {
       sys.rpcCallCount += rpcCalls.length;
       if (rpcCalls.length > 1 || rpcCalls[0]?.isBatch) batchRequests++;
 
-      // Proveedor
       if (cls.category === 'rpc') {
         if (!providers.has(cls.label)) {
           providers.set(cls.label, { label: cls.label, hostname, callCount: 0, errorCount: 0, timings: [] });
@@ -185,8 +189,9 @@ function parseHAR(harContent) {
         prov.timings.push(timing);
       }
 
+      const entryEpoch = Date.parse(entry.startedDateTime) || Date.now();
+
       for (const call of rpcCalls) {
-        // Stats por método
         if (!methods.has(call.method)) {
           methods.set(call.method, { method: call.method, count: 0, errorCount: 0, timings: [], providers: new Set() });
         }
@@ -198,12 +203,53 @@ function parseHAR(harContent) {
         if (call.chainHint) chains.add(call.chainHint);
         if (call.selector) selectors.set(call.selector, (selectors.get(call.selector) || 0) + 1);
 
+        // ── Lecturas vs escrituras on-chain ──
+        if (WRITE_METHODS.has(call.method)) writeCalls++; else readCalls++;
+
+        // ── Atribución multi-chain (subdominio del host o eth_chainId visto) ──
+        if (call.chainHint) chainByHost.set(hostname, call.chainHint);
+        const callChain = inferChainFromHost(hostname) || chainByHost.get(hostname);
+        if (callChain) chains.add(callChain);
+        if (cls.category === 'rpc') {
+          const key = callChain || 'Red no identificada';
+          if (!chainActivity.has(key)) chainActivity.set(key, { rpcCalls: 0, hosts: new Set() });
+          const ca = chainActivity.get(key);
+          ca.rpcCalls++;
+          ca.hosts.add(hostname);
+        }
+
+        // ── Gas ──
+        if (call.method === 'eth_gasPrice' && typeof call.resultValue === 'string') {
+          const wei = parseInt(call.resultValue, 16);
+          if (!Number.isNaN(wei)) gasPriceGwei = round(wei / 1e9);
+        }
+        if (call.method === 'eth_estimateGas' && typeof call.resultValue === 'string') {
+          const units = parseInt(call.resultValue, 16);
+          if (!Number.isNaN(units)) gasEstimates.push(units);
+        }
+
+        // ── Ciclo de vida de transacciones ──
+        if (WRITE_METHODS.has(call.method) && typeof call.resultValue === 'string' && call.resultValue.startsWith('0x')) {
+          txs.set(call.resultValue, {
+            hash: call.resultValue, sentAt: entryEpoch, polls: 0,
+            timeToReceiptMs: null, status: 'pending'
+          });
+        }
+        if (call.method === 'eth_getTransactionReceipt' && call.txParam && txs.has(call.txParam)) {
+          const tx = txs.get(call.txParam);
+          tx.polls++;
+          if (call.resultValue && tx.timeToReceiptMs === null) {
+            tx.timeToReceiptMs = Math.max(0, entryEpoch + timing - tx.sentAt);
+            tx.status = call.resultValue.status === '0x1' ? 'success'
+              : call.resultValue.status === '0x0' ? 'reverted' : 'confirmed';
+          }
+        }
+
         if (call.error) {
           m.errorCount++;
           entryRpcErrors.push(call);
           if (cls.category === 'rpc') providers.get(cls.label).errorCount++;
 
-          // Error fantasma: HTTP OK pero JSON-RPC falló
           if (status >= 200 && status < 300) {
             ghostErrors.push({
               hostname,
@@ -274,8 +320,7 @@ function parseHAR(harContent) {
     };
   }).sort((a, b) => b.requestCount - a.requestCount);
 
-  // Mapa de integraciones: frontend (o "dApp") → cada servicio, agrupado por
-  // etiqueta (los subdominios de un mismo servicio cuentan como UNA integración)
+  // Mapa de integraciones agrupado por etiqueta (subdominios = UNA integración)
   const from = pageHost || 'dApp Frontend';
   const integrationGroups = new Map();
   for (const s of systemStats) {
@@ -373,8 +418,6 @@ function parseHAR(harContent) {
   alerts.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
   // ─── HEALTH SCORE ──────────────────────────────────────────────────────────
-  // 100 − penalizaciones: cada error fantasma −15, HTTP error −5,
-  // método lento −5, rate limit −10. Piso 0.
 
   let health = 100;
   health -= ghostErrors.length * 15;
@@ -400,7 +443,14 @@ function parseHAR(harContent) {
     avgTiming: allTimings.length ? round(allTimings.reduce((a, b) => a + b, 0) / allTimings.length) : 0,
     p95Timing: percentile(allTimings, 95),
     healthScore: health,
-    pageHost: from
+    pageHost: from,
+    readCalls,
+    writeCalls,
+    gasPriceGwei,
+    avgGasEstimate: gasEstimates.length
+      ? Math.round(gasEstimates.reduce((a, b) => a + b, 0) / gasEstimates.length)
+      : null,
+    transactionCount: txs.size
   };
 
   return {
@@ -412,6 +462,10 @@ function parseHAR(harContent) {
     selectors: [...selectors.entries()]
       .map(([fn, count]) => ({ fn, count }))
       .sort((a, b) => b.count - a.count),
+    chainActivity: [...chainActivity.entries()]
+      .map(([chain, c]) => ({ chain, rpcCalls: c.rpcCalls, hosts: [...c.hosts] }))
+      .sort((a, b) => b.rpcCalls - a.rpcCalls),
+    transactions: [...txs.values()],
     ghostErrors,
     alerts,
     requests

@@ -147,6 +147,30 @@ const routes = {
       .sort((a, b) => b.requests - a.requests);
   },
 
+  '/api/chains': (d) => (d.data.chainActivity || []).map(c => ({
+    blockchain: c.chain,
+    llamadas_rpc: c.rpcCalls,
+    hosts: c.hosts.join(', ')
+  })),
+
+  '/api/transactions': (d) => (d.data.transactions || []).map(t => ({
+    tx_hash: t.hash.slice(0, 10) + '…' + t.hash.slice(-6),
+    estado: t.status === 'success' ? 'CONFIRMADA' : t.status === 'reverted' ? 'REVERTIDA' : t.status.toUpperCase(),
+    polls_receipt: t.polls,
+    confirmacion_ms: t.timeToReceiptMs ?? '—'
+  })),
+
+  '/api/wallet-infra': (d) => d.data.systems
+    .filter(s => s.category === 'wallet')
+    .map(s => ({
+      servicio: s.label,
+      hostname: s.hostname,
+      requests: s.requestCount,
+      errores: s.errorCount,
+      avg_ms: s.avgMs
+    }))
+    .sort((a, b) => b.requests - a.requests),
+
   '/api/endpoints': (d) => {
     // Agrupa la evidencia por endpoint (URL + método HTTP) dentro de cada integración
     const groups = new Map();
@@ -243,7 +267,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`\n  QASL WEB3 SENTINEL · API de datos`);
+  console.log(`\n  QASL WEB3 SENTINEL \u00b7 API de datos`);
   console.log(`  Escuchando en http://localhost:${PORT}`);
   console.log(`  Reports dir: ${REPORTS_DIR} (${listSources().length} scans disponibles)`);
   console.log(`  Rutas: ${Object.keys(routes).join(', ')}\n`);

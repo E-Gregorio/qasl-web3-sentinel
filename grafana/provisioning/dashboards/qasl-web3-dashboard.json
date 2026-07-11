@@ -7,14 +7,15 @@
     "json-rpc",
     "qasl",
     "sdet",
-    "blockchain"
+    "blockchain",
+    "metamask"
   ],
   "timezone": "browser",
   "editable": true,
   "graphTooltip": 1,
   "refresh": "30s",
   "schemaVersion": 39,
-  "version": 2,
+  "version": 4,
   "time": {
     "from": "now-6h",
     "to": "now"
@@ -203,9 +204,143 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "Errores fantasma",
+      "title": "Lecturas on-chain",
       "gridPos": {
         "x": 8,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#2dd4a7"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#2dd4a7",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^readCalls$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Escrituras on-chain",
+      "gridPos": {
+        "x": 12,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#ff8c42"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#ff8c42",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^writeCalls$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Errores fantasma",
+      "gridPos": {
+        "x": 16,
         "y": 3,
         "w": 4,
         "h": 5
@@ -268,78 +403,11 @@
       }
     },
     {
-      "id": 5,
-      "type": "stat",
-      "title": "Errores HTTP",
-      "gridPos": {
-        "x": 12,
-        "y": 3,
-        "w": 4,
-        "h": 5
-      },
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "qasl-web3-infinity"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "qasl-web3-infinity"
-          },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "http://api:7392/api/meta?source=$source",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "root_selector": "",
-          "columns": [],
-          "parser": "backend"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "mode": "fixed",
-            "fixedColor": "#ff8c42"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#ff8c42",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/^httpErrorCount$/",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "value",
-        "justifyMode": "center"
-      }
-    },
-    {
-      "id": 6,
+      "id": 7,
       "type": "stat",
       "title": "Proveedores RPC",
       "gridPos": {
-        "x": 16,
+        "x": 20,
         "y": 3,
         "w": 4,
         "h": 5
@@ -402,79 +470,13 @@
       }
     },
     {
-      "id": 7,
-      "type": "stat",
-      "title": "Blockchain / Red",
-      "gridPos": {
-        "x": 20,
-        "y": 3,
-        "w": 4,
-        "h": 5
-      },
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "qasl-web3-infinity"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "qasl-web3-infinity"
-          },
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "http://api:7392/api/meta?source=$source",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "root_selector": "",
-          "columns": [],
-          "parser": "backend"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "fixed",
-            "fixedColor": "#ffd166"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#ffd166",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/^chainsLabel$/",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "value",
-        "justifyMode": "center"
-      }
-    },
-    {
       "id": 8,
       "type": "stat",
       "title": "Requests HTTP totales",
       "gridPos": {
         "x": 0,
         "y": 8,
-        "w": 6,
+        "w": 4,
         "h": 4
       },
       "datasource": {
@@ -539,9 +541,9 @@
       "type": "stat",
       "title": "Métodos RPC distintos",
       "gridPos": {
-        "x": 6,
+        "x": 4,
         "y": 8,
-        "w": 6,
+        "w": 4,
         "h": 4
       },
       "datasource": {
@@ -604,11 +606,146 @@
     {
       "id": 10,
       "type": "stat",
-      "title": "Latencia promedio",
+      "title": "Errores HTTP",
+      "gridPos": {
+        "x": 8,
+        "y": 8,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#ff8c42"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#ff8c42",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^httpErrorCount$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Gas Price (Gwei)",
       "gridPos": {
         "x": 12,
         "y": 8,
-        "w": 6,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/meta?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#ffd166"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#ffd166",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "—"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^gasPriceGwei$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 12,
+      "type": "stat",
+      "title": "Latencia promedio",
+      "gridPos": {
+        "x": 16,
+        "y": 8,
+        "w": 4,
         "h": 4
       },
       "datasource": {
@@ -669,13 +806,13 @@
       }
     },
     {
-      "id": 11,
+      "id": 13,
       "type": "stat",
       "title": "Latencia p95",
       "gridPos": {
-        "x": 18,
+        "x": 20,
         "y": 8,
-        "w": 6,
+        "w": 4,
         "h": 4
       },
       "datasource": {
@@ -736,12 +873,204 @@
       }
     },
     {
-      "id": 12,
+      "id": 14,
+      "type": "bargauge",
+      "title": "Actividad por blockchain — llamadas RPC por red",
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/chains?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "blockchain",
+              "text": "Blockchain",
+              "type": "string"
+            },
+            {
+              "selector": "llamadas_rpc",
+              "text": "Llamadas RPC",
+              "type": "number"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#b388ff"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#b388ff",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "lcd",
+        "valueMode": "color",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": "/^Llamadas RPC$/"
+        },
+        "minVizHeight": 16,
+        "minVizWidth": 8
+      }
+    },
+    {
+      "id": 15,
+      "type": "table",
+      "title": "Ciclo de vida de transacciones on-chain (send → receipt)",
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/transactions?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "tx_hash",
+              "text": "Tx Hash",
+              "type": "string"
+            },
+            {
+              "selector": "estado",
+              "text": "Estado",
+              "type": "string"
+            },
+            {
+              "selector": "polls_receipt",
+              "text": "Polls de receipt",
+              "type": "number"
+            },
+            {
+              "selector": "confirmacion_ms",
+              "text": "Confirmación (ms)",
+              "type": "string"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Estado"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "CONFIRMADA": {
+                        "color": "#1a7f37",
+                        "index": 0
+                      },
+                      "REVERTIDA": {
+                        "color": "#cf222e",
+                        "index": 1
+                      },
+                      "PENDING": {
+                        "color": "#9e6a03",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Tx Hash": 0,
+              "Estado": 1,
+              "Polls de receipt": 2,
+              "Confirmación (ms)": 3
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 16,
       "type": "table",
       "title": "Alertas del análisis",
       "gridPos": {
         "x": 0,
-        "y": 12,
+        "y": 20,
         "w": 12,
         "h": 9
       },
@@ -857,12 +1186,12 @@
       ]
     },
     {
-      "id": 13,
+      "id": 17,
       "type": "table",
       "title": "Errores fantasma — HTTP 200 con error JSON-RPC (invisibles para Postman)",
       "gridPos": {
         "x": 12,
-        "y": 12,
+        "y": 20,
         "w": 12,
         "h": 9
       },
@@ -988,12 +1317,12 @@
       ]
     },
     {
-      "id": 14,
+      "id": 18,
       "type": "barchart",
       "title": "Llamadas por método JSON-RPC",
       "gridPos": {
         "x": 0,
-        "y": 21,
+        "y": 29,
         "w": 12,
         "h": 9
       },
@@ -1108,12 +1437,12 @@
       ]
     },
     {
-      "id": 15,
+      "id": 19,
       "type": "bargauge",
       "title": "Latencia p95 por método JSON-RPC",
       "gridPos": {
         "x": 12,
-        "y": 21,
+        "y": 29,
         "w": 12,
         "h": 9
       },
@@ -1193,12 +1522,12 @@
       }
     },
     {
-      "id": 16,
+      "id": 20,
       "type": "table",
       "title": "Detalle de métodos JSON-RPC",
       "gridPos": {
         "x": 0,
-        "y": 30,
+        "y": 38,
         "w": 14,
         "h": 9
       },
@@ -1376,12 +1705,12 @@
       ]
     },
     {
-      "id": 17,
+      "id": 21,
       "type": "piechart",
       "title": "Requests por categoría del ecosistema",
       "gridPos": {
         "x": 14,
-        "y": 30,
+        "y": 38,
         "w": 10,
         "h": 9
       },
@@ -1447,12 +1776,12 @@
       }
     },
     {
-      "id": 18,
+      "id": 22,
       "type": "table",
       "title": "Mapa de integraciones dApp — descubiertas desde el tráfico real",
       "gridPos": {
         "x": 0,
-        "y": 39,
+        "y": 47,
         "w": 24,
         "h": 8
       },
@@ -1650,12 +1979,12 @@
       ]
     },
     {
-      "id": 19,
+      "id": 23,
       "type": "table",
       "title": "Endpoints de las integraciones — qué se llamó y cómo respondió",
       "gridPos": {
         "x": 0,
-        "y": 47,
+        "y": 55,
         "w": 24,
         "h": 10
       },
@@ -1850,13 +2179,13 @@
       ]
     },
     {
-      "id": 20,
+      "id": 24,
       "type": "table",
       "title": "Proveedores RPC — comportamiento de nodos",
       "gridPos": {
         "x": 0,
-        "y": 57,
-        "w": 12,
+        "y": 65,
+        "w": 8,
         "h": 8
       },
       "datasource": {
@@ -1883,11 +2212,6 @@
             {
               "selector": "proveedor",
               "text": "Proveedor",
-              "type": "string"
-            },
-            {
-              "selector": "hostname",
-              "text": "Hostname",
               "type": "string"
             },
             {
@@ -1965,11 +2289,10 @@
             "excludeByName": {},
             "indexByName": {
               "Proveedor": 0,
-              "Hostname": 1,
-              "Llamadas RPC": 2,
-              "Errores": 3,
-              "Avg (ms)": 4,
-              "p95 (ms)": 5
+              "Llamadas RPC": 1,
+              "Errores": 2,
+              "Avg (ms)": 3,
+              "p95 (ms)": 4
             },
             "renameByName": {}
           }
@@ -1977,13 +2300,97 @@
       ]
     },
     {
-      "id": 21,
+      "id": 25,
+      "type": "table",
+      "title": "Infraestructura de wallet — servicios detectados",
+      "gridPos": {
+        "x": 8,
+        "y": 65,
+        "w": 8,
+        "h": 8
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/wallet-infra?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "servicio",
+              "text": "Servicio",
+              "type": "string"
+            },
+            {
+              "selector": "hostname",
+              "text": "Hostname",
+              "type": "string"
+            },
+            {
+              "selector": "requests",
+              "text": "Requests",
+              "type": "number"
+            },
+            {
+              "selector": "avg_ms",
+              "text": "Avg (ms)",
+              "type": "number"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Requests",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Servicio": 0,
+              "Hostname": 1,
+              "Requests": 2,
+              "Avg (ms)": 3
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 26,
       "type": "table",
       "title": "Funciones de contrato decodificadas (eth_call)",
       "gridPos": {
-        "x": 12,
-        "y": 57,
-        "w": 12,
+        "x": 16,
+        "y": 65,
+        "w": 8,
         "h": 8
       },
       "datasource": {
@@ -2049,12 +2456,12 @@
       ]
     },
     {
-      "id": 22,
+      "id": 27,
       "type": "table",
       "title": "Evidencia — request a request",
       "gridPos": {
         "x": 0,
-        "y": 65,
+        "y": 73,
         "w": 24,
         "h": 10
       },
@@ -2196,12 +2603,12 @@
       ]
     },
     {
-      "id": 23,
+      "id": 28,
       "type": "text",
       "title": "",
       "gridPos": {
         "x": 0,
-        "y": 75,
+        "y": 83,
         "w": 24,
         "h": 2
       },

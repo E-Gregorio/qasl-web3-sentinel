@@ -71,6 +71,24 @@ assertTrue('Integration map built (>= 6 integrations)',
 assertTrue('WebSocket/streaming infra classified (wallet category present)',
   d.integrations.some(i => i.category === 'wallet'));
 
+// ─── WEB3-NATIVE DETECTIONS (v1.1) ───────────────────────────────────────────
+
+assertEq('Read/write split — on-chain reads',  d.meta.readCalls, 16);
+assertEq('Read/write split — on-chain writes', d.meta.writeCalls, 1);
+
+assertTrue('Gas price extracted from eth_gasPrice (gwei)',
+  d.meta.gasPriceGwei != null && d.meta.gasPriceGwei > 0, d.meta.gasPriceGwei);
+
+assertTrue('Chain activity built from provider hostnames',
+  Array.isArray(d.chainActivity) && d.chainActivity.length >= 1, (d.chainActivity || []).length);
+
+assertTrue('Transaction lifecycle tracked (send → receipt)',
+  Array.isArray(d.transactions) && d.transactions.length === 1, (d.transactions || []).length);
+
+assertTrue('Transaction confirmed after 3 receipt polls',
+  d.transactions?.[0]?.polls === 3 && d.transactions?.[0]?.status === 'success',
+  `polls=${d.transactions?.[0]?.polls}, status=${d.transactions?.[0]?.status}`);
+
 // ─── RESULTS ─────────────────────────────────────────────────────────────────
 
 console.log('\nQASL WEB3 SENTINEL · Engine regression gate\n' + '─'.repeat(60));

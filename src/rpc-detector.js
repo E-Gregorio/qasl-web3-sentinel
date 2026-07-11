@@ -1,5 +1,5 @@
 /**
- * QASL WEB3 LIVE SERVER
+ * QASL WEB3 SENTINEL
  * rpc-detector.js — Clasificación de endpoints del ecosistema Web3
  *
  * Detecta:
@@ -10,6 +10,7 @@
  *   - Exploradores de bloques (Etherscan y familia *scan)
  *   - Servicios de seguridad Web3 (Blockaid, Blowfish)
  *   - Backend propio de la dApp, analytics y CDN/edge
+ *   - Chain por hostname (polygon-mainnet.infura.io → Polygon)
  *
  * Elyer Gregorio Maldonado
  */
@@ -112,13 +113,41 @@ const CHAIN_IDS = {
   '0x5':      'Goerli (testnet)',
   '0x13881':  'Mumbai (testnet)',
   '0xe708':   'Linea',
-  '0x144':    'zkSync Era'
+  '0x144':    'zkSync Era',
+  '0x74c':    'Soneium',
+  '0x279f':   'Monad (testnet)'
 };
 
 function chainLabel(chainIdHex) {
   if (!chainIdHex) return null;
   const norm = String(chainIdHex).toLowerCase();
   return CHAIN_IDS[norm] || `Chain ${parseInt(norm, 16) || norm}`;
+}
+
+// ─── INFERENCIA DE CHAIN POR HOSTNAME ────────────────────────────────────────
+// Los proveedores multi-chain codifican la red en el subdominio:
+// polygon-mainnet.infura.io, arb-mainnet.g.alchemy.com, etc.
+
+const CHAIN_HOST_PATTERNS = [
+  { pattern: /(^|[.-])(polygon)[.-]/i,            label: 'Polygon' },
+  { pattern: /(^|[.-])(bsc|bnb)[.-]/i,            label: 'BNB Smart Chain' },
+  { pattern: /(^|[.-])(arbitrum|arb)[.-]/i,       label: 'Arbitrum One' },
+  { pattern: /(^|[.-])(optimism|opt)[.-]/i,       label: 'Optimism' },
+  { pattern: /(^|[.-])base[.-]/i,                 label: 'Base' },
+  { pattern: /(^|[.-])(linea)[.-]/i,              label: 'Linea' },
+  { pattern: /(^|[.-])(avalanche|avax)[.-]/i,     label: 'Avalanche C-Chain' },
+  { pattern: /(^|[.-])(sepolia)[.-]/i,            label: 'Sepolia (testnet)' },
+  { pattern: /(^|[.-])(zksync)[.-]/i,             label: 'zkSync Era' },
+  { pattern: /(^|[.-])(monad)[.-]/i,              label: 'Monad (testnet)' },
+  { pattern: /(^|[.-])(soneium)[.-]/i,            label: 'Soneium' },
+  { pattern: /^(mainnet|eth-mainnet|ethereum)[.-]/i, label: 'Ethereum Mainnet' }
+];
+
+function inferChainFromHost(hostname) {
+  for (const { pattern, label } of CHAIN_HOST_PATTERNS) {
+    if (pattern.test(hostname)) return label;
+  }
+  return null;
 }
 
 // ─── SELECTORES DE FUNCIONES (4 bytes) — ERC-20 / ERC-721 / comunes ──────────
@@ -207,15 +236,4 @@ function looksLikeJsonRpc(postDataText) {
   if (!postDataText || typeof postDataText !== 'string') return false;
   const t = postDataText.trim();
   if (!t.startsWith('{') && !t.startsWith('[')) return false;
-  return t.includes('"jsonrpc"') && t.includes('"method"');
-}
-
-module.exports = {
-  classifyHost,
-  looksLikeJsonRpc,
-  chainLabel,
-  decodeSelector,
-  describeRpcError,
-  CHAIN_IDS,
-  FUNCTION_SELECTORS
-};
+  return t.includes('"j

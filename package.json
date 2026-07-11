@@ -12,9 +12,11 @@
     "grafana:down": "cd grafana && docker compose down",
     "grafana:api": "node src/grafana-api.js",
     "capture": "node capture-dapp.js",
-    "capture:uniswap": "node capture-dapp.js https://app.uniswap.org/ uniswap-session"
+    "capture:uniswap": "node capture-dapp.js https://app.uniswap.org/ uniswap-session",
+    "capture:wallet": "node capture-wallet-dapp.js"
   },
   "devDependencies": {
+    "@tenkeylabs/dappwright": "^2.13.6",
     "playwright": "^1.61.1"
   },
   "engines": {
