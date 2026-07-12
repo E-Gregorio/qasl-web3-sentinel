@@ -149,3 +149,13 @@ async function main() {
   const sizeMb = (fs.statSync(harPath).size / 1024 / 1024).toFixed(1);
   console.log('');
   log(C.green, '[DONE]', `HAR del flujo de wallet: input/${name}.har (${result.entries} requests, ${sizeMb} MB)`);
+  console.log('');
+  console.log(`${C.bold}  Siguiente paso — analizar el flujo con wallet:${C.reset}`);
+  console.log(`${C.cyan}  node run.js ${name}.har${C.reset}`);
+  console.log('');
+}
+
+main().catch(err => {
+  console.error(`\n${C.red}[FATAL] ${err.message}${C.reset}\n`);
+  process.exit(1);
+});

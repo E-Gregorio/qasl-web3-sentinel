@@ -236,4 +236,16 @@ function looksLikeJsonRpc(postDataText) {
   if (!postDataText || typeof postDataText !== 'string') return false;
   const t = postDataText.trim();
   if (!t.startsWith('{') && !t.startsWith('[')) return false;
-  return t.includes('"j
+  return t.includes('"jsonrpc"') && t.includes('"method"');
+}
+
+module.exports = {
+  classifyHost,
+  looksLikeJsonRpc,
+  chainLabel,
+  inferChainFromHost,
+  decodeSelector,
+  describeRpcError,
+  CHAIN_IDS,
+  FUNCTION_SELECTORS
+};

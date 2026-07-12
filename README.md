@@ -209,4 +209,60 @@ node run.js wallet-session.har
 
 Two GitHub Actions workflows ship with the repo:
 
-**`ci.yml` — engine self-test (every push).** Runs the engine against the deterministic demo fixture and then executes `scripts/verify-engine.js`: a regression gate with 14 assertions (ghost errors found and decoded, batch extraction, chain detection, alert generation, health score…). If the engine's behavior drifts, the build goes red. The HTML report and JSON dataset are uploaded as build artifacts on 
+**`ci.yml` — engine self-test (every push).** Runs the engine against the deterministic demo fixture and then executes `scripts/verify-engine.js`: a regression gate with 14 assertions (ghost errors found and decoded, batch extraction, chain detection, alert generation, health score…). If the engine's behavior drifts, the build goes red. The HTML report and JSON dataset are uploaded as build artifacts on every run.
+
+**`live-capture.yml` — live production capture (manual).** On demand, spins up headless Playwright inside the runner, captures real traffic from any dApp URL you pass as input, analyzes it, and publishes the reports as artifacts. Deliberately manual: live capture depends on external networks and must never gate the main CI.
+
+---
+
+## Case study: Uniswap (production traffic)
+
+First run against `app.uniswap.org` — no configuration, findings straight from the evidence:
+
+- **Uniswap does not expose Infura/Alchemy**: it proxies all RPC through its own gateway (`entry-gateway.backend-prod.api.uniswap.org`). Sentinel classified it as a self-hosted RPC node **by the shape of the JSON-RPC bodies**, not by any domain list.
+- That gateway returned **7 × HTTP 401** on `/rpc/1` during the session — undocumented behavior surfaced on the first scan.
+- **Multicall3 in action**: the session's `eth_call`s decoded to `aggregate3(...)` — Uniswap batches dozens of on-chain reads into single calls.
+- The integration map exposed 5 internal backends (including `privy.app.uniswap.org`, its embedded-wallet auth), CoinGecko across 3 subdomains grouped as one integration, WalletConnect, and its real-time price WebSocket stream.
+- Polling profile: 11 × `eth_blockNumber` / 9 × `eth_chainId` with p95 865ms — the heartbeat behind live price updates.
+
+---
+
+## Sensitive data
+
+A Web3 session HAR may contain provider API keys in URLs (`/v3/<key>`), wallet addresses, and transaction payloads. Treat HARs as secrets: `.gitignore` already excludes `input/*.har` (except the synthetic demo). Reports contain aggregated evidence only.
+
+---
+
+## npm scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run demo` | Analyze the bundled demo fixture |
+| `npm run scan` / `npm start` | `node run.js` (first `.har` in `input/` if no file given) |
+| `npm run capture` | Capture a dApp session with Playwright (Uniswap by default) |
+| `npm run capture:uniswap` | Capture Uniswap → `input/uniswap-session.har` |
+| `npm run capture:wallet` | Automated MetaMask wallet flow (Dappwright) → `input/wallet-session.har` |
+| `npm run grafana` / `grafana:down` | Start / stop the Grafana + API Docker stack |
+| `npm run grafana:api` | Data API only, no Docker (port 7392) |
+
+---
+
+## Roadmap
+
+- [x] Real MetaMask wallet automation via Dappwright + custom HAR recorder
+- [x] Multi-chain activity attribution (provider hostnames + `eth_chainId`)
+- [x] On-chain read/write split, gas price extraction, transaction lifecycle (send → receipt polls → confirmation)
+- [ ] AI-assisted analysis: Claude API chat over scan reports, embedded in the dashboard
+- [ ] Quality gates: `--fail-on-ghost` / latency thresholds as exit codes for CI
+- [ ] Playwright Test fixture + reporter: attach Sentinel analysis to the native Playwright HTML report
+- [ ] Scan diff: detect new integrations / regressions between sessions
+- [ ] Full calldata decoding with ABIs (beyond 4-byte selectors)
+- [ ] WebSocket RPC support (`eth_subscribe`)
+
+---
+
+## Author
+
+**Elyer Gregorio Maldonado** — SDET · QA Automation Engineer · 2026
+
+*QASL Web3 Sentinel is part of the QASL tooling suite.*
