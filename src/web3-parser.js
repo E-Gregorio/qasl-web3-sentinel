@@ -274,6 +274,7 @@ function parseHAR(harContent) {
       status,
       timing,
       isJsonRpc,
+      t: entry.startedDateTime || null,
       rpcMethods: rpcCalls.map(c => c.method),
       rpcErrors: entryRpcErrors.map(c => c.error.description),
       selectors: rpcCalls.map(c => c.selector).filter(Boolean)
@@ -426,6 +427,16 @@ function parseHAR(harContent) {
   health -= rateLimited.length * 10;
   health = Math.max(0, health);
 
+  // Desglose transparente del score: de dónde sale cada punto
+  const slowCount = alerts.filter(a => a.type === 'SLOW_RPC_METHOD').length;
+  const healthBreakdown = [{ concepto: 'Puntaje base', puntos: 100 }];
+  if (ghostErrors.length) healthBreakdown.push({ concepto: `Errores fantasma (${ghostErrors.length} × −15)`, puntos: -15 * ghostErrors.length });
+  if (httpErrors.length) healthBreakdown.push({ concepto: `Errores HTTP (${httpErrors.length} × −5)`, puntos: -5 * httpErrors.length });
+  if (rateLimited.length) healthBreakdown.push({ concepto: `Rate limiting (${rateLimited.length} × −10)`, puntos: -10 * rateLimited.length });
+  if (slowCount) healthBreakdown.push({ concepto: `Métodos RPC lentos (${slowCount} × −5)`, puntos: -5 * slowCount });
+  const rawSum = healthBreakdown.reduce((a, b) => a + b.puntos, 0);
+  if (rawSum !== health) healthBreakdown.push({ concepto: 'Piso mínimo (0)', puntos: health - rawSum });
+
   // ─── META ──────────────────────────────────────────────────────────────────
 
   const allTimings = requests.map(r => r.timing).sort((a, b) => a - b);
@@ -459,6 +470,7 @@ function parseHAR(harContent) {
     providers: providerStats,
     systems: systemStats,
     integrations,
+    healthBreakdown,
     selectors: [...selectors.entries()]
       .map(([fn, count]) => ({ fn, count }))
       .sort((a, b) => b.count - a.count),

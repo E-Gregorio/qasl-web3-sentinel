@@ -147,6 +147,55 @@ const routes = {
       .sort((a, b) => b.requests - a.requests);
   },
 
+  '/api/health-breakdown': (d) => (d.data.healthBreakdown || []).map(b => ({
+    concepto: b.concepto,
+    puntos: b.puntos
+  })),
+
+  '/api/gate': () => {
+    try {
+      const g = JSON.parse(fs.readFileSync(path.join(REPORTS_DIR, 'gate-result.json'), 'utf8'));
+      return [{
+        estado: g.status,
+        checks: `${g.passed}/${g.total}`,
+        fecha: g.ranAt,
+        fallos: (g.failedChecks || []).join(' \u00b7 ') || '\u2014'
+      }];
+    } catch {
+      return [{ estado: 'SIN DATOS', checks: '\u2014', fecha: '\u2014', fallos: 'ejecut\u00e1 node scripts/verify-engine.js' }];
+    }
+  },
+
+  '/api/history': () => listSources()
+    .slice(0, 30)
+    .map(s => {
+      try {
+        const data = JSON.parse(fs.readFileSync(path.join(REPORTS_DIR, s.file), 'utf8'));
+        return {
+          scan: (data.source || s.file).replace('web3-data-', '').replace('.json', '').replace('.har', ''),
+          fecha: new Date(s.mtime).toISOString().slice(0, 16).replace('T', ' '),
+          health: data.meta.healthScore,
+          ghost_errors: data.meta.ghostErrorCount,
+          errores_http: data.meta.httpErrorCount,
+          p95_ms: data.meta.p95Timing,
+          llamadas_rpc: data.meta.totalRpcCalls
+        };
+      } catch { return null; }
+    })
+    .filter(Boolean)
+    .reverse(),
+
+  '/api/timeline': (d) => d.data.requests
+    .filter((r, i) => i === 0 || r.isJsonRpc || r.status >= 400 || (r.rpcErrors && r.rpcErrors.length))
+    .slice(0, 150)
+    .map((r, i) => ({
+      hora: r.t ? String(r.t).slice(11, 23) : '\u2014',
+      evento: (r.rpcMethods && r.rpcMethods.length) ? r.rpcMethods.join(', ') : (i === 0 ? 'Carga de la dApp' : `${r.httpMethod} ${r.status}`),
+      destino: r.label,
+      estado: (r.rpcErrors && r.rpcErrors.length) ? 'ERROR RPC' : (r.status >= 400 ? `HTTP ${r.status}` : 'OK'),
+      detalle: (r.rpcErrors && r.rpcErrors.length) ? r.rpcErrors.join(' \u00b7 ') : '\u2014'
+    })),
+
   '/api/chains': (d) => (d.data.chainActivity || []).map(c => ({
     blockchain: c.chain,
     llamadas_rpc: c.rpcCalls,

@@ -46,6 +46,7 @@ function generateReport(parsed, harFilename, reportsDir) {
   const { meta, methods, providers, systems, integrations, selectors, ghostErrors, alerts, requests } = parsed;
   const chainActivity = parsed.chainActivity || [];
   const transactions = parsed.transactions || [];
+  const healthBreakdown = parsed.healthBreakdown || [];
 
   const kpi = (value, label, color = '#e8ecf1') => `
     <div class="kpi">
@@ -212,6 +213,15 @@ function generateReport(parsed, harFilename, reportsDir) {
 
   <h2>Alertas</h2>
   ${alerts.length ? alertItems : '<div class="empty">Sin alertas — la sesión capturada se ve saludable.</div>'}
+
+  ${healthBreakdown.length ? `
+  <h2>Desglose del Health Score</h2>
+  <table>
+    <thead><tr><th>Concepto</th><th>Puntos</th></tr></thead>
+    <tbody>${healthBreakdown.map(b => `
+    <tr><td>${esc(b.concepto)}</td><td class="num" style="color:${b.puntos < 0 ? '#ff4d6d' : '#2dd4a7'}">${b.puntos > 0 ? '+' : ''}${b.puntos}</td></tr>`).join('')}
+    <tr><td><strong>HEALTH SCORE</strong></td><td class="num"><strong>${meta.healthScore}</strong></td></tr></tbody>
+  </table>` : ''}
 
   ${ghostErrors.length ? `
   <h2>Errores fantasma (HTTP 200 + error JSON-RPC)</h2>

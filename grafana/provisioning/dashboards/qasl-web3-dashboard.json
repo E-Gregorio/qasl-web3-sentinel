@@ -15,7 +15,7 @@
   "graphTooltip": 1,
   "refresh": "30s",
   "schemaVersion": 39,
-  "version": 4,
+  "version": 5,
   "time": {
     "from": "now-6h",
     "to": "now"
@@ -171,6 +171,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "none",
+          "noValue": "—",
           "color": {
             "mode": "fixed",
             "fixedColor": "#4cc9f0"
@@ -238,6 +239,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "none",
+          "noValue": "—",
           "color": {
             "mode": "fixed",
             "fixedColor": "#2dd4a7"
@@ -305,6 +307,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "none",
+          "noValue": "—",
           "color": {
             "mode": "fixed",
             "fixedColor": "#ff8c42"
@@ -372,6 +375,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "none",
+          "noValue": "—",
           "color": {
             "mode": "fixed",
             "fixedColor": "#ff4d6d"
@@ -439,6 +443,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "none",
+          "noValue": "—",
           "color": {
             "mode": "fixed",
             "fixedColor": "#b388ff"
@@ -506,6 +511,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "none",
+          "noValue": "—",
           "color": {
             "mode": "fixed",
             "fixedColor": "#e8ecf1"
@@ -573,6 +579,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "none",
+          "noValue": "—",
           "color": {
             "mode": "fixed",
             "fixedColor": "#79c0ff"
@@ -640,6 +647,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "none",
+          "noValue": "—",
           "color": {
             "mode": "fixed",
             "fixedColor": "#ff8c42"
@@ -707,6 +715,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "none",
+          "noValue": "—",
           "color": {
             "mode": "fixed",
             "fixedColor": "#ffd166"
@@ -719,8 +728,7 @@
                 "value": null
               }
             ]
-          },
-          "noValue": "—"
+          }
         },
         "overrides": []
       },
@@ -775,6 +783,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "ms",
+          "noValue": "—",
           "color": {
             "mode": "fixed",
             "fixedColor": "#ffd166"
@@ -842,6 +851,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "ms",
+          "noValue": "—",
           "color": {
             "mode": "fixed",
             "fixedColor": "#ff8c42"
@@ -874,12 +884,12 @@
     },
     {
       "id": 14,
-      "type": "bargauge",
-      "title": "Actividad por blockchain — llamadas RPC por red",
+      "type": "table",
+      "title": "Desglose del Health Score — de dónde sale el número",
       "gridPos": {
         "x": 0,
         "y": 12,
-        "w": 12,
+        "w": 7,
         "h": 8
       },
       "datasource": {
@@ -896,7 +906,7 @@
           "type": "json",
           "source": "url",
           "format": "table",
-          "url": "http://api:7392/api/chains?source=$source",
+          "url": "http://api:7392/api/health-breakdown?source=$source",
           "url_options": {
             "method": "GET",
             "data": ""
@@ -904,13 +914,13 @@
           "root_selector": "",
           "columns": [
             {
-              "selector": "blockchain",
-              "text": "Blockchain",
+              "selector": "concepto",
+              "text": "Concepto",
               "type": "string"
             },
             {
-              "selector": "llamadas_rpc",
-              "text": "Llamadas RPC",
+              "selector": "puntos",
+              "text": "Puntos",
               "type": "number"
             }
           ],
@@ -918,16 +928,141 @@
         }
       ],
       "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "fixed",
-            "fixedColor": "#b388ff"
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Puntos"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#ff4d6d",
+                      "value": null
+                    },
+                    {
+                      "color": "#2dd4a7",
+                      "value": 0
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Concepto": 0,
+              "Puntos": 1
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "type": "stat",
+      "title": "Quality Gate — regresión del motor",
+      "gridPos": {
+        "x": 7,
+        "y": 12,
+        "w": 5,
+        "h": 8
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
           },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/gate",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "estado",
+              "text": "estado",
+              "type": "string"
+            },
+            {
+              "selector": "checks",
+              "text": "checks",
+              "type": "string"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "PASS": {
+                  "color": "#1a7f37",
+                  "index": 0,
+                  "text": "PASS"
+                },
+                "FAIL": {
+                  "color": "#cf222e",
+                  "index": 1,
+                  "text": "FAIL"
+                },
+                "SIN DATOS": {
+                  "color": "#57606a",
+                  "index": 2
+                }
+              }
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "#b388ff",
+                "color": "#57606a",
                 "value": null
               }
             ]
@@ -936,21 +1071,21 @@
         "overrides": []
       },
       "options": {
-        "orientation": "horizontal",
-        "displayMode": "lcd",
-        "valueMode": "color",
-        "showUnfilled": true,
         "reduceOptions": {
-          "values": true,
-          "calcs": [],
-          "fields": "/^Llamadas RPC$/"
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^estado$/",
+          "values": false
         },
-        "minVizHeight": 16,
-        "minVizWidth": 8
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
       }
     },
     {
-      "id": 15,
+      "id": 16,
       "type": "table",
       "title": "Ciclo de vida de transacciones on-chain (send → receipt)",
       "gridPos": {
@@ -1065,12 +1200,175 @@
       ]
     },
     {
-      "id": 16,
+      "id": 17,
+      "type": "bargauge",
+      "title": "Actividad por blockchain — llamadas RPC por red",
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/chains?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "blockchain",
+              "text": "Blockchain",
+              "type": "string"
+            },
+            {
+              "selector": "llamadas_rpc",
+              "text": "Llamadas RPC",
+              "type": "number"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#b388ff"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#b388ff",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "lcd",
+        "valueMode": "color",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": "/^Llamadas RPC$/"
+        },
+        "minVizHeight": 16,
+        "minVizWidth": 8
+      }
+    },
+    {
+      "id": 18,
+      "type": "bargauge",
+      "title": "Evolución histórica — Health Score por scan",
+      "gridPos": {
+        "x": 12,
+        "y": 20,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/history",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "scan",
+              "text": "Scan",
+              "type": "string"
+            },
+            {
+              "selector": "health",
+              "text": "Health",
+              "type": "number"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#ff4d6d",
+                "value": null
+              },
+              {
+                "color": "#ffd166",
+                "value": 50
+              },
+              {
+                "color": "#2dd4a7",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "lcd",
+        "valueMode": "color",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": "/^Health$/"
+        },
+        "minVizHeight": 16,
+        "minVizWidth": 8
+      }
+    },
+    {
+      "id": 19,
       "type": "table",
       "title": "Alertas del análisis",
       "gridPos": {
         "x": 0,
-        "y": 20,
+        "y": 28,
         "w": 12,
         "h": 9
       },
@@ -1186,12 +1484,12 @@
       ]
     },
     {
-      "id": 17,
+      "id": 20,
       "type": "table",
       "title": "Errores fantasma — HTTP 200 con error JSON-RPC (invisibles para Postman)",
       "gridPos": {
         "x": 12,
-        "y": 20,
+        "y": 28,
         "w": 12,
         "h": 9
       },
@@ -1317,12 +1615,12 @@
       ]
     },
     {
-      "id": 18,
+      "id": 21,
       "type": "barchart",
       "title": "Llamadas por método JSON-RPC",
       "gridPos": {
         "x": 0,
-        "y": 29,
+        "y": 37,
         "w": 12,
         "h": 9
       },
@@ -1437,12 +1735,12 @@
       ]
     },
     {
-      "id": 19,
+      "id": 22,
       "type": "bargauge",
       "title": "Latencia p95 por método JSON-RPC",
       "gridPos": {
         "x": 12,
-        "y": 29,
+        "y": 37,
         "w": 12,
         "h": 9
       },
@@ -1522,12 +1820,12 @@
       }
     },
     {
-      "id": 20,
+      "id": 23,
       "type": "table",
       "title": "Detalle de métodos JSON-RPC",
       "gridPos": {
         "x": 0,
-        "y": 38,
+        "y": 46,
         "w": 14,
         "h": 9
       },
@@ -1705,12 +2003,12 @@
       ]
     },
     {
-      "id": 21,
+      "id": 24,
       "type": "piechart",
       "title": "Requests por categoría del ecosistema",
       "gridPos": {
         "x": 14,
-        "y": 38,
+        "y": 46,
         "w": 10,
         "h": 9
       },
@@ -1776,12 +2074,12 @@
       }
     },
     {
-      "id": 22,
+      "id": 25,
       "type": "table",
       "title": "Mapa de integraciones dApp — descubiertas desde el tráfico real",
       "gridPos": {
         "x": 0,
-        "y": 47,
+        "y": 55,
         "w": 24,
         "h": 8
       },
@@ -1979,12 +2277,12 @@
       ]
     },
     {
-      "id": 23,
+      "id": 26,
       "type": "table",
       "title": "Endpoints de las integraciones — qué se llamó y cómo respondió",
       "gridPos": {
         "x": 0,
-        "y": 55,
+        "y": 63,
         "w": 24,
         "h": 10
       },
@@ -2179,12 +2477,149 @@
       ]
     },
     {
-      "id": 24,
+      "id": 27,
+      "type": "table",
+      "title": "Línea de tiempo de la sesión — hitos JSON-RPC y errores en orden",
+      "gridPos": {
+        "x": 0,
+        "y": 73,
+        "w": 24,
+        "h": 9
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "qasl-web3-infinity"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "qasl-web3-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://api:7392/api/timeline?source=$source",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "hora",
+              "text": "Hora",
+              "type": "string"
+            },
+            {
+              "selector": "evento",
+              "text": "Evento",
+              "type": "string"
+            },
+            {
+              "selector": "destino",
+              "text": "Destino",
+              "type": "string"
+            },
+            {
+              "selector": "estado",
+              "text": "Estado",
+              "type": "string"
+            },
+            {
+              "selector": "detalle",
+              "text": "Detalle",
+              "type": "string"
+            }
+          ],
+          "parser": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Estado"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "OK": {
+                        "color": "#1a7f37",
+                        "index": 0
+                      },
+                      "ERROR RPC": {
+                        "color": "#cf222e",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Hora"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "Hora": 0,
+              "Evento": 1,
+              "Destino": 2,
+              "Estado": 3,
+              "Detalle": 4
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 28,
       "type": "table",
       "title": "Proveedores RPC — comportamiento de nodos",
       "gridPos": {
         "x": 0,
-        "y": 65,
+        "y": 82,
         "w": 8,
         "h": 8
       },
@@ -2300,12 +2735,12 @@
       ]
     },
     {
-      "id": 25,
+      "id": 29,
       "type": "table",
       "title": "Infraestructura de wallet — servicios detectados",
       "gridPos": {
         "x": 8,
-        "y": 65,
+        "y": 82,
         "w": 8,
         "h": 8
       },
@@ -2384,12 +2819,12 @@
       ]
     },
     {
-      "id": 26,
+      "id": 30,
       "type": "table",
       "title": "Funciones de contrato decodificadas (eth_call)",
       "gridPos": {
         "x": 16,
-        "y": 65,
+        "y": 82,
         "w": 8,
         "h": 8
       },
@@ -2456,12 +2891,12 @@
       ]
     },
     {
-      "id": 27,
+      "id": 31,
       "type": "table",
       "title": "Evidencia — request a request",
       "gridPos": {
         "x": 0,
-        "y": 73,
+        "y": 90,
         "w": 24,
         "h": 10
       },
@@ -2603,12 +3038,12 @@
       ]
     },
     {
-      "id": 28,
+      "id": 32,
       "type": "text",
       "title": "",
       "gridPos": {
         "x": 0,
-        "y": 83,
+        "y": 100,
         "w": 24,
         "h": 2
       },

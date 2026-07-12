@@ -89,6 +89,13 @@ assertTrue('Transaction confirmed after 3 receipt polls',
   d.transactions?.[0]?.polls === 3 && d.transactions?.[0]?.status === 'success',
   `polls=${d.transactions?.[0]?.polls}, status=${d.transactions?.[0]?.status}`);
 
+assertTrue('Health breakdown explains the score',
+  Array.isArray(d.healthBreakdown) && d.healthBreakdown.reduce((a, b) => a + b.puntos, 0) === d.meta.healthScore,
+  JSON.stringify(d.healthBreakdown || null));
+
+assertTrue('Timestamps captured for session timeline',
+  d.requests.length > 0 && !!d.requests[0].t, d.requests[0]?.t);
+
 // ─── RESULTS ─────────────────────────────────────────────────────────────────
 
 console.log('\nQASL WEB3 SENTINEL · Engine regression gate\n' + '─'.repeat(60));
@@ -97,6 +104,16 @@ for (const c of checks) {
 }
 console.log('─'.repeat(60));
 console.log(`${checks.length - failed}/${checks.length} checks passed\n`);
+
+// Persistir el resultado del gate para el panel de Grafana
+const gate = {
+  status: failed > 0 ? 'FAIL' : 'PASS',
+  passed: checks.length - failed,
+  total: checks.length,
+  failedChecks: checks.filter(c => !c.ok).map(c => c.label),
+  ranAt: new Date().toISOString()
+};
+fs.writeFileSync(path.join(__dirname, '..', 'reports', 'gate-result.json'), JSON.stringify(gate, null, 2));
 
 if (failed > 0) {
   console.error(`✗ ENGINE REGRESSION: ${failed} check(s) failed.`);
